@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core pages -->
+  <url><loc>https://ozyn.example.com/</loc></url>
+  <url><loc>https://ozyn.example.com/shop</loc></url>
+  <url><loc>https://ozyn.example.com/sale</loc></url>
+  <url><loc>https://ozyn.example.com/about</loc></url>
+  <url><loc>https://ozyn.example.com/contact</loc></url>
+  <url><loc>https://ozyn.example.com/faq</loc></url>
+  <url><loc>https://ozyn.example.com/size-guide</loc></url>
+  <url><loc>https://ozyn.example.com/shipping-returns</loc></url>
+  <url><loc>https://ozyn.example.com/privacy</loc></url>
+  <url><loc>https://ozyn.example.com/terms</loc></url>
+  <url><loc>https://ozyn.example.com/accessibility</loc></url>
+  <url><loc>https://ozyn.example.com/privacy-choices</loc></url>
+
+  <!-- Current products -->
+  <url><loc>https://ozyn.example.com/product/seamless-leggings</loc></url>
+  <url><loc>https://ozyn.example.com/product/support-sports-bra</loc></url>
+  <url><loc>https://ozyn.example.com/product/ribbed-tank</loc></url>
+</urlset>

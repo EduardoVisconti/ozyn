@@ -1,9 +1,9 @@
 // src/components/Header.jsx
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, User, ShoppingBag, Sun, Moon } from "lucide-react";
+import { User, ShoppingBag, Sun, Moon } from "lucide-react";
 import { CartContext } from "../context/CartContext";
-import { AuthContext } from "../context/AuthContext"; // <-- importa o auth
+import { AuthContext } from "../context/AuthContext";
 
 /* theme with persistence */
 function useTheme() {
@@ -27,7 +27,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme, toggle } = useTheme();
   const { count } = useContext(CartContext) || { count: 0 };
-  const { user } = useContext(AuthContext) || {}; // <-- pega o usuário logado (se existir)
+  const { user } = useContext(AuthContext) || {};
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 4);
@@ -48,7 +48,7 @@ export default function Header() {
       {/* announcement */}
       <div className="w-full bg-neutral-100 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 text-xs md:text-sm">
         <div className="w-full py-2 text-center tracking-wide">
-          Launch Sale — 15% OFF · Use code: OZYN15
+          Free Shipping丨Buy 2 get 10% off with code "OZYN"
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export default function Header() {
               <Link
                 key={item.label}
                 to={item.to}
-                className="text-sm font-medium uppercase tracking-wide text-neutral-800 dark:text-neutral-200"
+                className="text-sm font-medium uppercase tracking-wide text-neutral-800 dark:text-neutral-200 hover:opacity-80"
               >
                 {item.label}
               </Link>
@@ -90,18 +90,10 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* RIGHT icons */}
-          <div className="flex items-center gap-3 md:gap-5 ml-auto">
-            <button
-              aria-label="Search"
-              className="hidden md:inline-flex rounded p-1 text-neutral-800 dark:text-neutral-200"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-
-            {/* <-- se estiver logado vai para /account, senão /auth/login */}
+          {/* RIGHT icons (sem lupa) */}
+          <div className="ml-auto flex items-center gap-3 md:gap-5">
             <Link
-              to={user ? "/account" : "/auth/login"}
+              to={user ? "/account" : "/login"}
               aria-label="Account"
               className="rounded p-1 text-neutral-800 dark:text-neutral-200"
             >
@@ -114,9 +106,14 @@ export default function Header() {
               className="relative rounded p-1 text-neutral-800 dark:text-neutral-200"
             >
               <ShoppingBag className="h-5 w-5" />
-              <span className="pointer-events-none absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-700 px-1 text-[10px] font-semibold text-white">
-                {count}
-              </span>
+              {count > 0 && (
+                <span
+                  className="pointer-events-none absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-neutral-900 px-1 text-[10px] font-semibold text-white dark:bg-white dark:text-black"
+                  aria-label={`${count} items in cart`}
+                >
+                  {count}
+                </span>
+              )}
             </Link>
 
             <button

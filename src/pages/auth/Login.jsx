@@ -1,105 +1,110 @@
-import { useContext, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext"; // << AQUI
+
+function explainFirebaseError(err) {
+  const code = err?.code || "";
+  const map = {
+    "auth/invalid-email": "Please enter a valid email address.",
+    "auth/missing-password": "Please enter your password.",
+    "auth/wrong-password": "Incorrect email or password.",
+    "auth/user-not-found": "No account found with this email.",
+    "auth/user-disabled": "This account has been disabled.",
+    "auth/too-many-requests": "Too many attempts. Try again later.",
+    "auth/network-request-failed": "Network error. Check your connection.",
+    "auth/invalid-credential": "Invalid credentials.",
+  };
+  return map[code] || err?.message || "Sign-in failed. Please try again.";
+}
 
 export default function Login() {
-  const { login, resetPassword, mapError } = useContext(AuthContext);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [err, setErr] = useState("");
+  const navigate = useNavigate();
+  const { signIn } = useAuth();
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const nav = useNavigate();
-  const loc = useLocation();
-  const redirectTo = loc.state?.from?.pathname || "/account";
+  const [err, setErr] = useState("");
 
-  const onSubmit = async (e) => {
+  const onChange = (e) => setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
+
+  async function onSubmit(e) {
     e.preventDefault();
     setErr("");
-    setLoading(true);
+    if (!form.email.trim()) return setErr("Please enter your email.");
+    if (!form.password) return setErr("Please enter your password.");
     try {
-      await login(email.trim(), password);
-      nav(redirectTo, { replace: true });
+      setLoading(true);
+      await signIn(form.email.trim(), form.password);
+      navigate("/account");
     } catch (e) {
-      setErr(mapError(e));
+      setErr(explainFirebaseError(e));
     } finally {
       setLoading(false);
     }
-  };
-
-  const onReset = async () => {
-    if (!email) return setErr("Enter your email to reset the password.");
-    setErr("");
-    try {
-      await resetPassword(email.trim());
-      alert("We sent a password reset link to your email (check spam).");
-    } catch (e) {
-      setErr(mapError(e));
-    }
-  };
+  }
 
   return (
-    <div className="min-h-[70vh] grid place-items-center page-x py-16">
-      <div className="w-full max-w-md rounded-3xl border border-neutral-200 p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
-        <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">Sign in</h1>
-        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-          Access your Ozyn account.
+    <main className="page-x py-16">
+      <div className="mx-auto w-full max-w-[440px] rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
+        <h1 className="text-xl font-semibold">Sign in</h1>
+        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+          Welcome back to Ozyn.
         </p>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        {err && (
+          <div className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+            {err}
+          </div>
+        )}
+
+        <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-              Email
-            </label>
+            <label className="mb-1 block text-sm font-medium">Email</label>
             <input
+              name="email"
               type="email"
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={form.email}
+              onChange={onChange}
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
               autoComplete="email"
               required
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-              Password
-            </label>
+            <label className="mb-1 block text-sm font-medium">Password</label>
             <input
+              name="password"
               type="password"
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={form.password}
+              onChange={onChange}
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
               autoComplete="current-password"
               required
             />
           </div>
 
-          {err && <div className="text-sm text-red-600 dark:text-red-400">{err}</div>}
-
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full rounded-xl border border-neutral-900 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-neutral-900 hover:opacity-90 disabled:opacity-50 dark:border-neutral-100 dark:text-neutral-100"
+            className="w-full rounded-xl border border-neutral-900 px-4 py-2.5 text-sm font-semibold uppercase tracking-wide text-neutral-900 hover:opacity-90 disabled:opacity-60 dark:border-neutral-100 dark:text-neutral-100"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
 
-          <button
-            type="button"
-            onClick={onReset}
-            className="w-full rounded-xl border border-neutral-300 px-6 py-2 text-xs uppercase tracking-wide text-neutral-700 hover:opacity-90 dark:border-neutral-700 dark:text-neutral-300"
-          >
-            Forgot your password?
-          </button>
+          <div className="text-center text-sm">
+            <Link to="/forgot" className="mt-2 inline-block underline">
+              Forgot your password?
+            </Link>
+          </div>
         </form>
 
-        <div className="mt-6 text-center text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-4 text-center text-sm text-neutral-600 dark:text-neutral-400">
           Don’t have an account?{" "}
-          <Link to="/auth/register" className="underline">
+          <Link to="/register" className="underline">
             Create one
           </Link>
-        </div>
+        </p>
       </div>
-    </div>
+    </main>
   );
 }

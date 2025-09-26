@@ -1,10 +1,12 @@
 // Página Home enxuta: só compõe as sections usando dados reais
 import { useMemo } from "react";
 import { products } from "../data/products";
+import { SITE } from "../lib/site";
 import Hero from "../components/Hero";
 import Carousel from "../components/Carousel";
 import CategoryGrid from "../components/CategoryGrid";
 import Sustainability from "../components/Sustainability";
+import Seo from "../components/Seo";
 
 export default function Home() {
   const newArrivals = useMemo(
@@ -34,6 +36,11 @@ export default function Home() {
 
   return (
     <div className="space-y-24 md:space-y-32">
+      <Seo
+      title={`Women's Training & Yoga Apparel | ${SITE.name}`}
+      description="Performance-first pieces for women who train — gym, yoga and everything in between."
+      canonical={`${SITE.url}/`}
+    />
       <Hero />
       <Carousel title="New Releases" ctaLabel="Shop All" ctaTo="/shop" items={newArrivals} />
       <Carousel title="Best Sellers" ctaLabel="Shop All" ctaTo="/shop" items={bestSellers} />

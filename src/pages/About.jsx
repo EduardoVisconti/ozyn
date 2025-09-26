@@ -1,12 +1,19 @@
-// src/pages/About.jsx
+import Seo from "../components/Seo";
+import { SITE } from "../lib/site";
+
 export default function About() {
   return (
     <div className="page-x py-12 md:py-16">
+      <Seo
+        title={`About ${SITE.name}`}
+        description="OZYN is women’s training apparel — focused on fit, longevity and minimalist design."
+        canonical={`${SITE.url}/about`}
+      />
       <h1 className="text-2xl font-semibold">About OZYN</h1>
       <p className="mt-4 max-w-3xl text-neutral-700 dark:text-neutral-300">
-        OZYN é performance com estética limpa. Criamos peças pensadas para treino — academia,
-        corrida leve, yoga — com foco em caimento, mobilidade e durabilidade. Estamos começando
-        com coleções enxutas e estoque controlado, priorizando o que as atletas realmente usam.
+        {SITE.name} is women’s training apparel: gym, yoga, and the in-between. We start
+        small, make what athletes actually wear, and focus on fit, mobility and durability.
+        Thoughtful fabrics, clean design, and a commitment to improve every drop.
       </p>
     </div>
   );

@@ -1,5 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { products } from "../data/products";
+import { SITE } from "../lib/site";
+import Seo from "../components/Seo";
 
 export default function Shop() {
   const [params] = useSearchParams();
@@ -10,6 +12,11 @@ export default function Shop() {
 
   return (
     <div className="page-x py-12 md:py-16">
+      <Seo
+        title={`Shop | ${SITE.name}`}
+        description="Explore tops, leggings, sports bras and more."
+        canonical={`${SITE.url}/shop`}
+      />
       <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="text-2xl font-semibold">
           {category ? `Shop — ${category}` : "Shop"}

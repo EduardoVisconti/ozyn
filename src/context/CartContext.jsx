@@ -1,11 +1,12 @@
 // src/context/CartContext.jsx
-import { createContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 
 export const CartContext = createContext(null);
 
 const LS_KEY = "ozyn_cart_v1";
 
-export default function CartProvider({ children }) {
+export function CartProvider({ children }) {
+  // itens
   const [items, setItems] = useState(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
@@ -21,62 +22,90 @@ export default function CartProvider({ children }) {
     } catch {}
   }, [items]);
 
-  const add = (entry) => {
+  // drawer aberto/fechado
+  const [isOpen, setIsOpen] = useState(false);
+  const openCart = useCallback(() => setIsOpen(true), []);
+  const closeCart = useCallback(() => setIsOpen(false), []);
+  const toggleCart = useCallback(() => setIsOpen((v) => !v), []);
+
+  // ações
+  const add = useCallback((entry, { open = true } = {}) => {
     // entry: {id, title, price, qty, color, size, image, slug}
     setItems((prev) => {
-      const i = prev.findIndex(
-        (x) =>
-          x.id === entry.id &&
-          x.color === entry.color &&
-          x.size === entry.size
+      const key = `${entry.id}-${entry.size || ""}-${entry.color || ""}`;
+      const idx = prev.findIndex(
+        (x) => `${x.id}-${x.size || ""}-${x.color || ""}` === key
       );
-      if (i >= 0) {
+      if (idx >= 0) {
         const copy = [...prev];
-        copy[i] = { ...copy[i], qty: copy[i].qty + (entry.qty || 1) };
+        copy[idx] = { ...copy[idx], qty: copy[idx].qty + (entry.qty || 1) };
         return copy;
       }
       return [...prev, { ...entry, qty: entry.qty || 1 }];
     });
-  };
+    if (open) setIsOpen(true); // abre o drawer ao adicionar
+  }, []);
 
-  const removeIndex = (idx) =>
-    setItems((prev) => prev.filter((_, i) => i !== idx));
+  const inc = useCallback((item) => {
+    setItems((prev) =>
+      prev.map((it) =>
+        it.id === item.id && it.size === item.size && it.color === item.color
+          ? { ...it, qty: it.qty + 1 }
+          : it
+      )
+    );
+  }, []);
 
-  const inc = (idx) =>
-    setItems((prev) => {
-      const copy = [...prev];
-      copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
-      return copy;
-    });
+  const dec = useCallback((item) => {
+    setItems((prev) =>
+      prev
+        .map((it) =>
+          it.id === item.id && it.size === item.size && it.color === item.color
+            ? { ...it, qty: Math.max(0, it.qty - 1) }
+            : it
+        )
+        .filter((it) => it.qty > 0)
+    );
+  }, []);
 
-  const dec = (idx) =>
-    setItems((prev) => {
-      const copy = [...prev];
-      const nextQty = copy[idx].qty - 1;
-      if (nextQty <= 0) copy.splice(idx, 1);
-      else copy[idx] = { ...copy[idx], qty: nextQty };
-      return copy;
-    });
+  const removeItem = useCallback((item) => {
+    setItems((prev) =>
+      prev.filter(
+        (it) =>
+          !(
+            it.id === item.id &&
+            it.size === item.size &&
+            it.color === item.color
+          )
+      )
+    );
+  }, []);
 
-  const clear = () => setItems([]);
+  const clear = useCallback(() => setItems([]), []);
 
   const count = useMemo(() => items.reduce((s, it) => s + it.qty, 0), [items]);
   const subtotal = useMemo(
-    () => items.reduce((s, it) => s + it.price * it.qty, 0),
+    () => items.reduce((s, it) => s + (it.price ?? 0) * it.qty, 0),
     [items]
   );
 
-  const value = {
-    items,
-    add,
-    removeIndex,
-    inc,
-    dec,
-    clear,
-    count,
-    subtotal,
-    isEmpty: items.length === 0,
-  };
+  const value = useMemo(
+    () => ({
+      items,
+      add,
+      inc,
+      dec,
+      removeItem,
+      clear,
+      count,
+      subtotal,
+      isOpen,
+      openCart,
+      closeCart,
+      toggleCart,
+    }),
+    [items, add, inc, dec, removeItem, clear, count, subtotal, isOpen, openCart, closeCart, toggleCart]
+  );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

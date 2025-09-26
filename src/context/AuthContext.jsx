@@ -1,79 +1,88 @@
-import { createContext, useEffect, useMemo, useState } from "react";
+// src/context/AuthContext.jsx
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   onAuthStateChanged,
-  signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  updateProfile,
+  signOut as fbSignOut,
   sendPasswordResetEmail,
+  updateProfile,
+  sendEmailVerification,
 } from "firebase/auth";
+
+// 👇 AJUSTE este import conforme seu projeto:
+// import { auth } from "../firebase";
 import { auth } from "../lib/firebase";
 
 export const AuthContext = createContext(null);
 
-function mapError(e) {
-  const code = e?.code || "";
-  const M = {
-    "auth/invalid-email": "Invalid email address.",
-    "auth/user-disabled": "This account is disabled.",
-    "auth/user-not-found": "User not found.",
-    "auth/wrong-password": "Incorrect password.",
-    "auth/email-already-in-use": "Email is already in use.",
-    "auth/weak-password": "Weak password (min 6 characters).",
-    "auth/operation-not-allowed": "Email/password sign-in is not enabled in Firebase.",
-    "auth/invalid-api-key": "Invalid API key. Check your Firebase config (.env.local).",
-    default: "Something went wrong. Please try again.",
-  };
-  return M[code] || M.default;
+// Hook de conveniência (é isso que o Login/Register importam)
+export function useAuth() {
+  return useContext(AuthContext) || {};
 }
 
-export default function AuthProvider({ children }) {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Observa mudanças de autenticação
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u || null);
+      setUser(u);
       setLoading(false);
     });
     return () => unsub();
   }, []);
 
-  const login = async (email, password) => {
-    try {
-      const res = await signInWithEmailAndPassword(auth, email, password);
-      return res.user;
-    } catch (e) {
-      console.error("Login error:", e?.code, e?.message, e);
-      throw e;
-    }
-  };
+  const signIn = useCallback(async (email, password) => {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    setUser(cred.user);
+    return cred.user;
+  }, []);
 
-  const register = async ({ name, email, password }) => {
-    try {
-      const res = await createUserWithEmailAndPassword(auth, email, password);
-      if (name) await updateProfile(res.user, { displayName: name });
-      return res.user;
-    } catch (e) {
-      console.error("Register error:", e?.code, e?.message, e);
-      throw e;
-    }
-  };
+  const signUp = useCallback(
+    async ({ name, email, password, verifyEmail = true }) => {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      if (name) {
+        await updateProfile(cred.user, { displayName: name });
+      }
+      if (verifyEmail) {
+        try {
+          await sendEmailVerification(cred.user);
+        } catch {}
+      }
+      setUser(cred.user);
+      return cred.user;
+    },
+    []
+  );
 
-  const logout = () => signOut(auth);
+  const signOut = useCallback(async () => {
+    await fbSignOut(auth);
+    setUser(null);
+  }, []);
 
-  const resetPassword = async (email) => {
-    try {
-      await sendPasswordResetEmail(auth, email);
-    } catch (e) {
-      console.error("Reset password error:", e?.code, e?.message, e);
-      throw e;
-    }
-  };
+  const sendReset = useCallback(async (email) => {
+    await sendPasswordResetEmail(auth, email);
+  }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout, resetPassword, mapError }),
-    [user, loading]
+    () => ({
+      user,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+      sendReset,
+    }),
+    [user, loading, signIn, signUp, signOut, sendReset]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

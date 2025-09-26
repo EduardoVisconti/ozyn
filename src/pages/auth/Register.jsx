@@ -1,118 +1,138 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext"; // << AQUI
+
+function explainFirebaseError(err) {
+  const code = err?.code || "";
+  const map = {
+    "auth/email-already-in-use": "This email is already in use.",
+    "auth/invalid-email": "Please enter a valid email address.",
+    "auth/weak-password": "Password should be at least 6 characters.",
+    "auth/operation-not-allowed": "Email/password sign-up is disabled.",
+    "auth/too-many-requests": "Too many attempts. Try again later.",
+    "auth/network-request-failed": "Network error. Check your connection.",
+  };
+  return map[code] || err?.message || "Registration failed. Please try again.";
+}
 
 export default function Register() {
-  const { register, mapError } = useContext(AuthContext);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [err, setErr] = useState("");
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [loading, setLoading] = useState(false);
-  const nav = useNavigate();
+  const [err, setErr] = useState("");
 
-  const onSubmit = async (e) => {
+  const onChange = (e) => setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
+
+  async function onSubmit(e) {
     e.preventDefault();
     setErr("");
-    if (password !== confirm) return setErr("Passwords do not match.");
-    setLoading(true);
+    if (!form.name.trim()) return setErr("Please enter your name.");
+    if (!form.email.trim()) return setErr("Please enter your email.");
+    if (form.password.length < 6) return setErr("Password must be at least 6 characters.");
+    if (form.password !== form.confirm) return setErr("Passwords do not match.");
+
     try {
-      await register({ name: name.trim(), email: email.trim(), password });
-      nav("/account", { replace: true });
+      setLoading(true);
+      await signUp({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        verifyEmail: true,
+      });
+      navigate("/account");
     } catch (e) {
-      setErr(mapError(e));
+      setErr(explainFirebaseError(e));
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-[70vh] grid place-items-center page-x py-16">
-      <div className="w-full max-w-md rounded-3xl border border-neutral-200 p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
-        <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">Create account</h1>
-        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-          Join Ozyn and start moving.
+    <main className="page-x py-16">
+      <div className="mx-auto w-full max-w-[440px] rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
+        <h1 className="text-xl font-semibold">Create your account</h1>
+        <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+          Join Ozyn to track orders and save favorites.
         </p>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        {err && (
+          <div className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+            {err}
+          </div>
+        )}
+
+        <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-              Name
-            </label>
+            <label className="mb-1 block text-sm font-medium">Name</label>
             <input
+              name="name"
               type="text"
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={form.name}
+              onChange={onChange}
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
               autoComplete="name"
               required
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-              Email
-            </label>
+            <label className="mb-1 block text-sm font-medium">Email</label>
             <input
+              name="email"
               type="email"
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={form.email}
+              onChange={onChange}
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
               autoComplete="email"
               required
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-                Password
-              </label>
-              <input
-                type="password"
-                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                required
-                minLength={6}
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
-                Confirm password
-              </label>
-              <input
-                type="password"
-                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                autoComplete="new-password"
-                required
-                minLength={6}
-              />
-            </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Password</label>
+            <input
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={onChange}
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+              autoComplete="new-password"
+              required
+              minLength={6}
+            />
           </div>
 
-          {err && <div className="text-sm text-red-600 dark:text-red-400">{err}</div>}
+          <div>
+            <label className="mb-1 block text-sm font-medium">Confirm password</label>
+            <input
+              name="confirm"
+              type="password"
+              value={form.confirm}
+              onChange={onChange}
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+              autoComplete="new-password"
+              required
+              minLength={6}
+            />
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full rounded-xl border border-neutral-900 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-neutral-900 hover:opacity-90 disabled:opacity-50 dark:border-neutral-100 dark:text-neutral-100"
+            className="w-full rounded-xl border border-neutral-900 px-4 py-2.5 text-sm font-semibold uppercase tracking-wide text-neutral-900 hover:opacity-90 disabled:opacity-60 dark:border-neutral-100 dark:text-neutral-100"
           >
             {loading ? "Creating..." : "Create account"}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="mt-4 text-center text-sm text-neutral-600 dark:text-neutral-400">
           Already have an account?{" "}
-          <Link to="/auth/login" className="underline">
+          <Link to="/login" className="underline">
             Sign in
           </Link>
-        </div>
+        </p>
       </div>
-    </div>
+    </main>
   );
 }

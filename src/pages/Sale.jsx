@@ -1,11 +1,18 @@
 // src/pages/Sale.jsx
 import { Link } from "react-router-dom";
 import { products } from "../data/Products";
+import { SITE } from "../lib/site";
+import Seo from "../components/Seo";
 
 export default function Sale() {
   const onSale = products.filter((p) => p.salePrice);
   return (
     <div className="page-x py-12 md:py-16">
+      <Seo
+        title={`On Sale | ${SITE.name}`}
+        description="Marked-down styles while they last."
+        canonical={`${SITE.url}/sale`}
+      />
       <div className="mb-6 flex items-end justify-between">
         <h1 className="text-2xl font-semibold">On Sale</h1>
         <div className="text-sm text-neutral-600 dark:text-neutral-300">
