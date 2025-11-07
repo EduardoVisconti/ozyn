@@ -1,58 +1,80 @@
-import { Link } from "react-router-dom";
-import { products } from "../data/products";
+// src/components/CategoryGrid.jsx
+import { useNavigate } from "react-router-dom";
 
-const desiredCategories = ["Leggings", "Sports Bras", "Tops", "Shorts", "Jackets", "Accessories"];
-const fallbackImages = [
-  "/assets/prod/leggings-1.jpg",
-  "/assets/prod/bra-1.jpg",
-  "/assets/prod/tank-1.jpg",
-  "/assets/prod/leggings-1b.jpg",
-  "/assets/prod/bra-1b.jpg",
-  "/assets/prod/tank-1.jpg",
+const categories = [
+  {
+    label: "Full Sets",
+    hint: "Matching tops & leggings",
+    image: "/assets/products/power-black-1.jpg",
+    to: "/shop?category=Sets",
+  },
+  {
+    label: "Short Sets",
+    hint: "Heat-ready fits",
+    image: "/assets/products/evergreen-short-set-1.jpg",
+    to: "/shop?category=Sets",
+  },
+  {
+    label: "Layered & Jackets",
+    hint: "Zip-ups & 3-piece looks",
+    image: "/assets/products/mocha-set-1.jpg",
+    to: "/shop?category=Sets",
+  },
+  {
+    label: "Seamless Essentials",
+    hint: "Second-skin feel",
+    image: "/assets/products/power-pink-1.jpg",
+    to: "/shop?category=Sets",
+  },
+  {
+    label: "Maternity",
+    hint: "Support through every stage",
+    image: "/assets/products/maternity-support-set-1.jpg",
+    to: "/shop?category=Maternity",
+  },
+  {
+    label: "Dresses",
+    hint: "From studio to street",
+    image: "/assets/products/minimal-rib-dress-1.jpg",
+    to: "/shop?category=Dresses",
+  },
 ];
 
-function findImageForCategory(cat, fallbackIdx) {
-  const match = products.find(
-    (p) => p.category.toLowerCase() === cat.toLowerCase() && p.images?.[0]
-  );
-  return match?.images?.[0] || fallbackImages[fallbackIdx % fallbackImages.length];
-}
-
-function CategoryTile({ label, to, image }) {
-  return (
-    <Link
-      to={to}
-      className="group relative flex h-48 md:h-60 xl:h-64 items-end overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-100 transition hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
-    >
-      {image ? (
-        <img src={image} alt={label} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-      ) : null}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
-      <span className="relative z-[1] m-4 rounded-md bg-black/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white dark:bg-white/10">
-        {label}
-      </span>
-    </Link>
-  );
-}
-
 export default function CategoryGrid() {
-  let idx = 0;
-  const data = desiredCategories.map((label) => {
-    const img = findImageForCategory(label, idx);
-    idx++;
-    return { label, to: `/shop?category=${encodeURIComponent(label)}`, image: img };
-  });
+  const navigate = useNavigate();
 
   return (
-    <section className="w-full pb-14">
-      <div className="mb-10 md:mb-12 page-x">
-        <h2 className="text-xl font-semibold tracking-wide text-neutral-900 dark:text-neutral-100">
+    <section className="page-x">
+      <div className="mb-4 flex items-baseline justify-between">
+        <h2 className="text-lg font-semibold tracking-[0.18em] uppercase text-neutral-900 dark:text-neutral-50">
           Shop by Category
         </h2>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-5 page-x">
-        {data.map((c) => (
-          <CategoryTile key={c.label} label={c.label} to={c.to} image={c.image} />
+
+      <div className="grid gap-3 md:grid-cols-3">
+        {categories.map((cat) => (
+          <button
+            key={cat.label}
+            onClick={() => navigate(cat.to)}
+            className="group relative flex h-40 items-end overflow-hidden rounded-3xl bg-neutral-900 text-left md:h-56"
+          >
+            {cat.image && (
+              <img
+                src={cat.image}
+                alt={cat.label}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-90" />
+            <div className="relative z-10 px-4 pb-3 text-white md:px-5 md:pb-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em]">
+                {cat.label}
+              </div>
+              <div className="text-[10px] text-neutral-200 md:text-xs">
+                {cat.hint}
+              </div>
+            </div>
+          </button>
         ))}
       </div>
     </section>

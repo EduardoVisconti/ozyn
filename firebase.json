@@ -6,6 +6,9 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "redirects": [
+      { "source": "/assets/prod/**", "destination": "/img/placeholder.svg", "type": 302 }
+    ],
     "rewrites": [
       {
         "source": "**",

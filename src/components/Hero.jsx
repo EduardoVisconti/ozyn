@@ -2,36 +2,36 @@ import { Link } from "react-router-dom";
 
 export default function Hero() {
   return (
-    <section className="w-full pt-4 md:pt-6">
-      <div className="relative w-full min-h-[70vh] md:min-h-[85vh]">
-        <img
-          src="/assets/hero.png"
-          alt="OZYN hero"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
-        <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/55 via-black/30 to-transparent dark:from-black/60 dark:via-black/35"
-          aria-hidden
-        />
-        <div className="relative grid h-full w-full items-end md:grid-cols-5">
-          <div className="page-x md:col-span-2 flex flex-col gap-4 justify-end pb-10 md:pb-16 pt-14 md:pt-0">
-            <h1 className="text-3xl md:text-5xl font-semibold leading-tight tracking-tight text-white">
-              Move beautifully.
+    <section className="relative h-[80vh] w-full overflow-hidden">
+      {/* Background image */}
+      <img
+        src="/assets/hero.jpg"
+        alt="OZYN performance wear"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+
+      {/* Gradient overlay para ler o texto */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+      {/* Content bottom-left */}
+      <div className="relative flex h-full items-end">
+        <div className="page-x pb-16 md:pb-24">
+          <div className="max-w-2xl text-white">
+            <h1 className="text-5xl font-semibold leading-tight md:text-7xl md:leading-[1.05]">
+              Holiday
+              <br />
+              show-stoppers.
             </h1>
-            <p className="max-w-md text-sm md:text-base text-neutral-200">
-              Performance-first pieces designed for women who train — gym, yoga, and everything in
-              between.
+            <p className="mt-4 text-base md:text-xl leading-relaxed text-neutral-100">
+              This gear performs as effortlessly as you do.
             </p>
-            <div>
-              <Link
-                to="/shop"
-                className="inline-block rounded-xl border border-white/90 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white hover:opacity-90"
-              >
-                Shop
-              </Link>
-            </div>
+            <button
+              onClick={() => (window.location.href = "/shop")}
+              className="mt-6 inline-flex items-center rounded-full bg-white/95 px-7 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-neutral-900 hover:bg-white"
+            >
+              Shop Women&apos;s New In
+            </button>
           </div>
-          <div className="hidden md:block md:col-span-3" />
         </div>
       </div>
     </section>

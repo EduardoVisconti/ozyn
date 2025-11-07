@@ -1,11 +1,11 @@
 // src/components/Header.jsx
-import { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { User, ShoppingBag, Sun, Moon } from "lucide-react";
-import { CartContext } from "../context/CartContext";
-import { AuthContext } from "../context/AuthContext";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { User, Sun, Moon } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import CartButton from "./CartButton";
 
-/* theme with persistence */
+/* Theme with persistence */
 function useTheme() {
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") return "dark";
@@ -14,20 +14,26 @@ function useTheme() {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     return prefersDark ? "dark" : "light";
   });
+
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") root.classList.add("dark");
     else root.classList.remove("dark");
     localStorage.setItem("theme", theme);
   }, [theme]);
-  return { theme, toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")) };
+
+  return {
+    theme,
+    toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")),
+  };
 }
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme, toggle } = useTheme();
-  const { count } = useContext(CartContext) || { count: 0 };
-  const { user } = useContext(AuthContext) || {};
+  const { user } = useAuth() || {};
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 4);
@@ -36,92 +42,93 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Só o que existe hoje no catálogo
   const navItems = [
-    { label: "SHOP", to: "/shop" },
-    { label: "ON SALE", to: "/sale" },
-    { label: "ABOUT", to: "/about" },
-    { label: "CONTACT", to: "/contact" },
+    { label: "Shop All", path: "/shop" },
+    { label: "Sets", category: "Sets" },
+    { label: "Maternity", category: "Maternity" },
+    { label: "Dresses", category: "Dresses" },
   ];
+
+  const handleNavClick = (item) => {
+    if (item.path) {
+      navigate(item.path);
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    if (item.category) {
+      const params = new URLSearchParams(location.search);
+      params.set("category", item.category);
+      navigate(`/shop?${params.toString()}`);
+      window.scrollTo(0, 0);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* announcement */}
-      <div className="w-full bg-neutral-100 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 text-xs md:text-sm">
+      {/* Announcement bar */}
+      <div className="w-full bg-neutral-100 text-xs text-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">
         <div className="w-full py-2 text-center tracking-wide">
           Free Shipping丨Buy 2 get 10% off with code "OZYN"
         </div>
       </div>
 
-      {/* nav */}
+      {/* Main nav */}
       <div
-        className={`w-full bg-white/90 dark:bg-black/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-black/70 ${
+        className={`w-full bg-white/90 backdrop-blur dark:bg-black/90 supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-black/70 ${
           isScrolled ? "shadow-sm shadow-black/10 dark:shadow-black/30" : ""
         }`}
       >
-        <nav className="relative flex h-16 w-full items-center justify-between page-x md:h-20">
-          {/* MOBILE brand (left) */}
+        <nav className="relative flex h-16 w-full items-center page-x md:h-20">
+          {/* LEFT: Logo */}
           <Link
             to="/"
-            className="md:hidden text-xl font-semibold tracking-[0.25em] text-neutral-900 dark:text-neutral-100"
+            className="flex items-center gap-2 text-[36px] font-semibold tracking-[0.28em] text-neutral-900 dark:text-neutral-100"
           >
             OZYN
           </Link>
 
-          {/* LEFT links (desktop) */}
-          <div className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.to}
-                className="text-sm font-medium uppercase tracking-wide text-neutral-800 dark:text-neutral-200 hover:opacity-80"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* CENTER brand (desktop) */}
+          {/* CENTER: Menu (desktop) */}
           <div className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 md:block">
-            <Link
-              to="/"
-              className="pointer-events-auto select-none text-2xl font-semibold tracking-[0.25em] text-neutral-900 dark:text-neutral-100"
-            >
-              OZYN
-            </Link>
+            <div className="pointer-events-auto flex items-center gap-8">
+              {navItems.map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => handleNavClick(item)}
+                  className="text-[14px] font-medium uppercase tracking-[0.10em] text-neutral-800 hover:opacity-80 dark:text-neutral-200"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* RIGHT icons (sem lupa) */}
+          {/* RIGHT: icons */}
           <div className="ml-auto flex items-center gap-3 md:gap-5">
+            {/* Account */}
             <Link
               to={user ? "/account" : "/login"}
               aria-label="Account"
-              className="rounded p-1 text-neutral-800 dark:text-neutral-200"
+              className="rounded p-1 text-neutral-800 hover:opacity-80 dark:text-neutral-200"
             >
               <User className="h-5 w-5" />
             </Link>
 
-            <Link
-              to="/cart"
-              aria-label="Cart"
-              className="relative rounded p-1 text-neutral-800 dark:text-neutral-200"
-            >
-              <ShoppingBag className="h-5 w-5" />
-              {count > 0 && (
-                <span
-                  className="pointer-events-none absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-neutral-900 px-1 text-[10px] font-semibold text-white dark:bg-white dark:text-black"
-                  aria-label={`${count} items in cart`}
-                >
-                  {count}
-                </span>
-              )}
-            </Link>
+            {/* Cart drawer */}
+            <CartButton />
 
+            {/* Theme toggle */}
             <button
               aria-label="Toggle theme"
               onClick={toggle}
-              className="rounded p-1 text-neutral-800 dark:text-neutral-200"
+              className="rounded p-1 text-neutral-800 hover:opacity-80 dark:text-neutral-200"
             >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </button>
           </div>
         </nav>
