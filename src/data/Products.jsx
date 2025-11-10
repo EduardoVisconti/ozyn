@@ -2,7 +2,7 @@
 
 export const products = [
   {
-    id: "ozyn-mocha-layered-set",
+    id: "prod_TNdyQDEDqDS3Ap",
     title: "Mocha Layered Performance Set",
     category: "Sets",
     color: "Mocha",
@@ -25,7 +25,7 @@ export const products = [
   },
 
   {
-    id: "ozyn-maternity-support-set",
+    id: "prod_TNdzaZOSsoout5",
     title: "Maternity Support Set",
     category: "Maternity",
     color: "Grey",
@@ -48,7 +48,7 @@ export const products = [
   },
 
   {
-    id: "ozyn-evergreen-short-set",
+    id: "prod_TNe0KT3yLaEA8D",
     title: "Evergreen Studio Short Set",
     category: "Sets",
     color: "Green",
@@ -73,7 +73,7 @@ export const products = [
 
   // Power Seamless: todas as cores no mesmo produto
   {
-    id: "ozyn-power-seamless-set",
+    id: "prod_TNe075ZpIGQKVy",
     title: "Power Seamless Set",
     category: "Sets",
     description:
@@ -131,7 +131,7 @@ export const products = [
   },
 
   {
-    id: "ozyn-velocity-long-sleeve",
+    id: "prod_TNe1xxoykeMeAh",
     title: "Velocity Long Sleeve Short Set",
     category: "Sets",
     color: "Black",
@@ -154,7 +154,7 @@ export const products = [
   },
 
   {
-    id: "ozyn-minimal-rib-dress",
+    id: "prod_TNe1BtDZvIzih3",
     title: "Minimal Rib Tank Dress",
     category: "Dresses",
     color: "Black",
@@ -177,7 +177,7 @@ export const products = [
   },
 
   {
-    id: "ozyn-cloudflow-yoga-set",
+    id: "prod_TNe2lfOJsZhOMf",
     title: "Cloudflow Yoga Zip Set",
     category: "Sets",
     color: "Light Blue",

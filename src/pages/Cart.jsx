@@ -22,13 +22,18 @@ export default function Cart() {
   );
 
   async function startCheckout(cartItems) {
+    if (import.meta.env.PROD && !import.meta.env.VITE_API_URL?.includes("https://")) {
+      alert("Demo only: Stripe Checkout is configured in test mode for portfolio purposes. No real payment will be processed.");
+      return;
+    }
+    
     const stripe = await stripePromise;
 
     const resp = await fetch(`${API}/create-checkout-session`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        items: cartItems.map((it) => ({
+        items: cartItems.map(it => ({
           slug: it.slug,
           qty: it.qty,
           size: it.size,
