@@ -1,196 +1,265 @@
-# OZYN — Project Snapshot (copy-paste this whole block into your README or notes)
+# OZYN — Modern Activewear Storefront
 
-# ───────────────────────────────────────────────────────────────────────────────
+OZYN is a modern ecommerce-style frontend built as a portfolio project for a women’s activewear brand.
 
-# 1) Stack & Status
+The goal is to showcase production-ready patterns: reusable components, clean routing, a global cart with drawer UX, Firebase Authentication, and a Stripe Checkout integration via a minimal Node/Express backend — all wired with environment-based configuration and without exposing secrets.
 
-# - React (Vite + Tailwind), react-router-dom
+---
 
-# - Firebase Auth (email/password)
+## 1. Overview
 
-# - Stripe Checkout (server Node/Express)
+Key capabilities:
 
-# - Cart Drawer (Context + localStorage)
+- Home page with full-bleed hero, curated product rows and category grid.
+- Product listing (Shop) with category filtering via query string.
+- Product detail page (PDP) with:
+  - size & quantity selection,
+  - color variants for the **Power Seamless Set** in a single page,
+  - responsive gallery with thumbnails.
+- Global cart:
+  - **Cart Drawer** (slide-out) + full Cart page,
+  - add / increment / decrement / remove / clear,
+  - persisted in `localStorage`.
+- Authentication:
+  - Firebase Email/Password (Login & Register),
+  - protected Account page shell (Overview, Settings placeholder, Sign out).
+- Stripe Checkout:
+  - Node/Express endpoint to create Checkout Sessions in **test mode** using a `priceMap` contract.
+  - Frontend wired to use env-based API URL.
+- Deployed frontend on **Firebase Hosting** (`ozynfit.web.app`) as a live portfolio demo.
 
-# - Pages: Home, Shop, Cart, Login, Register, Account
+This project is safe to share publicly and suitable to include in a CV / portfolio.
 
-# - Header com badge do carrinho + theme toggle
+---
 
-# ───────────────────────────────────────────────────────────────────────────────
+## 2. Tech Stack
 
-# ───────────────────────────────────────────────────────────────────────────────
+### Frontend
 
-# 2) Project Structure
+- **React** (Vite)
+- **React Router DOM** — client-side routing
+- **Tailwind CSS** — utility-first styling
+- **Context API + localStorage** — cart state & cart drawer
+- **Firebase Authentication** — email/password
+- **SEO helpers** — `<Seo />` component for titles, descriptions, canonical URLs, and basic Product schema markup
 
-# (paths are relative to repo root)
+### Backend (Checkout Demo)
 
-# ───────────────────────────────────────────────────────────────────────────────
+- **Node.js + Express**
+- **Stripe Node SDK**
+- `priceMap.js` mapping product slugs → Stripe `price_id`
+- CORS configured for:
+  - `http://localhost:5173`
+  - `https://ozynfit.web.app`
+  - `https://ozynfit.firebaseapp.com`
 
+> In the hosted version, Checkout is intentionally kept in **demo/test mode** so that no real payments are processed.
+
+---
+
+## 3. Project Structure
+
+```bash
 .
-├─ index.html
-├─ vite.config.js
 ├─ package.json
-├─ .env.local # frontend envs (ignored)
+├─ vite.config.js
+├─ index.html
 ├─ /public
-│ └─ assets/
-│ ├─ hero.png
-│ └─ products/ # product/category images
+│  └─ assets/
+│      ├─ hero.jpg
+│      └─ products/              # Product and category images
 ├─ /src
-│ ├─ main.jsx # <BrowserRouter><AuthProvider><CartProvider><App/>
-│ ├─ App.jsx # Header, CartDrawer (global), Routes, Footer
-│ ├─ index.css # Tailwind base + .page-x utility
-│ ├─ /lib
-│ │ └─ firebase.js # init Firebase + export { auth }
-│ ├─ /context
-│ │ ├─ AuthContext.jsx # export { AuthProvider, useAuth, AuthContext }
-│ │ └─ CartContext.jsx # export { CartProvider, CartContext } (named)
-│ ├─ /components
-│ │ ├─ Header.jsx # menu + brand + account + CartButton + theme toggle
-│ │ ├─ Footer.jsx
-│ │ ├─ CartDrawer.jsx # side panel: list, inc/dec/remove/clear, checkout
-│ │ ├─ CartButton.jsx # cart icon with badge, opens drawer
-│ │ └─ AddToCartButton.jsx # add to cart + open drawer (no navigation)
-│ ├─ /pages
-│ │ ├─ Home.jsx # hero full-bleed; New Releases; Best Sellers; Categories (3x2)
-│ │ ├─ Shop.jsx # grid of products (uses AddToCartButton)
-│ │ ├─ Cart.jsx # legacy cart page (drawer is primary)
-│ │ ├─ Account.jsx # tabs: Overview, Orders (placeholder), Settings, Sign out
-│ │ └─ /auth
-│ │ ├─ Login.jsx # sign in (Firebase)
-│ │ └─ Register.jsx # sign up (Firebase)
-│ ├─ /data
-│ │ ├─ products.js # mock catalog: {id, slug, title, price, image, color?, size?}
-│ │ └─ categories.js # category tiles for “Shop by Category”
-│ └─ /utils
-│ └─ currency.js # formatUSD (optional)
+│  ├─ main.jsx                   # <BrowserRouter><AuthProvider><CartProvider><App/>
+│  ├─ App.jsx                    # Layout shell: Header, CartDrawer, Routes, Footer
+│  ├─ index.css                  # Tailwind base + layout utilities (.page-x, etc.)
+│  ├─ /lib
+│  │   ├─ firebase.js            # Firebase initialization (Auth)
+│  │   └─ site.js                # SITE metadata (name, url, defaults)
+│  ├─ /context
+│  │   ├─ AuthContext.jsx        # AuthProvider + useAuth hook
+│  │   └─ CartContext.jsx        # CartProvider + cart state & drawer controls
+│  ├─ /components
+│  │   ├─ Header.jsx             # Logo left, centered nav, account, cart, theme toggle
+│  │   ├─ Footer.jsx
+│  │   ├─ Hero.jsx
+│  │   ├─ Carousel.jsx           # “New Releases” / “Best Sellers”
+│  │   ├─ CategoryGrid.jsx       # “Shop by Category” tiles
+│  │   ├─ MidBanner.jsx          # Secondary wide banner
+│  │   ├─ CartButton.jsx         # Cart icon with badge + opens drawer
+│  │   ├─ CartDrawer.jsx         # Slide-out cart: list, inc/dec/remove/clear, checkout
+│  │   └─ Seo.jsx                # Page-level SEO/meta helper
+│  ├─ /pages
+│  │   ├─ Home.jsx               # Composes hero, carousels, categories, mid-banner
+│  │   ├─ Shop.jsx               # Product grid; supports ?category= filtering
+│  │   ├─ Product.jsx            # PDP with variants (Power Seamless), gallery, CTAs
+│  │   ├─ Cart.jsx               # Full cart page using CartContext
+│  │   ├─ Account.jsx            # Auth-only shell (Overview, Orders placeholder, Settings)
+│  │   └─ /auth
+│  │       ├─ Login.jsx          # Firebase sign in
+│  │       └─ Register.jsx       # Firebase sign up
+│  ├─ /data
+│  │   └─ products.js            # Mock catalog with slugs, variants, SEO fields
+│  └─ /utils (optional)
+│      └─ currency.js            # format helpers (if used)
 └─ /server
-├─ index.js # Express + Stripe create-checkout-session + /debug/price/:id
-├─ priceMap.js # { slug -> price_id } (MUST match Stripe & frontend slugs)
-└─ .env # STRIPE_SECRET_KEY, PORT
+   ├─ index.js                   # Express app + /create-checkout-session
+   ├─ priceMap.js                # slug → Stripe price_id mapping
+   └─ .env                       # STRIPE_SECRET_KEY, PORT (gitignored)
+```
 
-# ───────────────────────────────────────────────────────────────────────────────
+---
 
-# 3) Environment Variables
+## 4. Data Model & Contracts
 
-# ───────────────────────────────────────────────────────────────────────────────
+### Product shape (`/src/data/products.js`)
 
-# Frontend (.env.local)
+- Individual items:
+  - `id`, `title`, `category`, `price`, `images[]`, `sizes[]`, `color?`, `tags?`
+  - `seo: { slug, metaTitle, metaDescription }`
+- **Power Seamless Set**:
+  - Single product with `variants[]`:
+    - `{ color, code, images[] }`
+  - One PDP with selectable colors.
 
-# ---------------------
+### Cart item shape
 
-# VITE*FIREBASE*\* values from your Firebase project (Auth enabled for Email/Password).
+Pushed into `CartContext`:
 
-# VITE*STRIPE_PK must match your Stripe mode (pk_live*_ with price*live*_; pk*test*_ with price*test*_).
+```ts
+{
+  id: string;
+  title: string;
+  price: number;
+  qty: number;
+  color?: string;
+  size?: string;
+  image?: string;
+  slug: string; // must match product.seo.slug
+}
+```
 
-# VITE_API_URL should point to your backend base (local or deployed).
+### Stripe Checkout request
 
-cat > .env.local <<'EOF'
+Frontend → `POST ${VITE_API_URL}/create-checkout-session`:
+
+```json
+{
+  "items": [
+    {
+      "slug": "mocha-layered-performance-set",
+      "qty": 1,
+      "size": "S",
+      "color": "Mocha"
+    }
+  ],
+  "customerEmail": "user@example.com",
+  "successUrl": "http://localhost:5173/success",
+  "cancelUrl": "http://localhost:5173/cart"
+}
+```
+
+Backend:
+
+- Uses `priceMap.js` to translate `slug` → `price_id`.
+- Creates a Stripe Checkout Session (test mode in this project).
+
+---
+
+## 5. Environment Variables
+
+All sensitive values are **local only** (not committed).
+
+### Frontend — `.env.local`
+
+```env
+# Firebase Auth
 VITE_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY
 VITE_FIREBASE_AUTH_DOMAIN=YOUR_PROJECT.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
 VITE_FIREBASE_APP_ID=YOUR_FIREBASE_APP_ID
 VITE_FIREBASE_MESSAGING_SENDER_ID=YOUR_SENDER_ID
 
-VITE_STRIPE_PK=pk_live_xxx_or_pk_test_xxx
-VITE_API_URL=http://127.0.0.1:8787
-EOF
+# Stripe
+VITE_STRIPE_PK=pk_test_xxx             # Test publishable key
+VITE_API_URL=http://127.0.0.1:8787     # Local backend for checkout
+```
 
-# Server (server/.env)
+### Backend — `server/.env`
 
-# --------------------
-
-# STRIPE*SECRET_KEY must be the matching mode (sk_live*_ ↔ pk*live*_, sk*test*_ ↔ pk*test*_).
-
-cat > server/.env <<'EOF'
-STRIPE_SECRET_KEY=sk_live_xxx_or_sk_test_xxx
+```env
+STRIPE_SECRET_KEY=sk_test_xxx          # Test secret key
 PORT=8787
-EOF
+```
 
-# ───────────────────────────────────────────────────────────────────────────────
+> Use matching pairs: `pk_test` with `sk_test`, or `pk_live` with `sk_live`.  
+> For this portfolio, **test mode** is recommended.
 
-# 4) Contracts & Key Notes
+---
 
-# ───────────────────────────────────────────────────────────────────────────────
+## 6. Running Locally
 
-# - Cart items object shape:
+### 1) Install dependencies
 
-# { id, title, price, qty, color?, size?, image?, slug }
+```bash
+# root (frontend)
+npm install
 
-# - Checkout request (POST ${VITE_API_URL}/create-checkout-session):
-
-# {
-
-# items: [{ slug: "product-slug", qty: 1, size: "S", color: "Black" }],
-
-# customerEmail: "user@example.com",
-
-# successUrl: "http://localhost:5173/success",
-
-# cancelUrl: "http://localhost:5173/cart"
-
-# }
-
-# - server/priceMap.js: slug -> price_id (MUST match Stripe products & frontend slugs)
-
-# - Use AddToCartButton instead of navigating to /cart (it opens the Cart Drawer)
-
-# - Only one <BrowserRouter> in the app (main.jsx)
-
-# - AuthContext exports: { AuthProvider, useAuth, AuthContext }
-
-# - CartContext exports: { CartProvider, CartContext } and includes: add/inc/dec/remove/clear/count/subtotal/isOpen/openCart/closeCart/toggleCart
-
-# - Theme persisted in localStorage ("light" | "dark")
-
-# ───────────────────────────────────────────────────────────────────────────────
-
-# 5) Run locally
-
-# ───────────────────────────────────────────────────────────────────────────────
-
-# Frontend
-
-npm i
-npm run dev
-
-# → http://localhost:5173
-
-# Server (Stripe)
-
+# server
 cd server
-npm i
+npm install
+cd ..
+```
+
+### 2) Start the backend (Stripe test mode)
+
+```bash
+cd server
+npm start
+# -> [server] listening on http://localhost:8787
+```
+
+### 3) Start the frontend
+
+```bash
+cd ..
 npm run dev
+# -> http://localhost:5173
+```
 
-# → http://127.0.0.1:8787
+- Add products to cart.
+- Use the cart drawer or cart page to initiate checkout.
+- Stripe Checkout opens using **test cards** (e.g. `4242 4242 4242 4242`).
 
-# Debug: GET /debug/price/:id to verify your sk*\* sees the price*\*
+If you only want the UI for portfolio (without a running backend), you can:
 
-# ───────────────────────────────────────────────────────────────────────────────
+- keep the server offline, and/or
+- guard the checkout call to behave as a **“Demo only”** message in production.
 
-# 6) Commit suggestions (Conventional)
+---
 
-# ───────────────────────────────────────────────────────────────────────────────
+## 7. Deployment Notes
 
-# Single atomic commit:
+Current setup:
 
-git add -A
-git commit -m "feat: cart drawer, header badge, auth pages, account page, and Stripe checkout server"
-git push
+- **Frontend**: Firebase Hosting (`ozynfit.web.app`).
+- **Backend**: Local-only for development.  
+  For a full production flow you would:
+  - Deploy `/server` to a host with Node (Render/Railway/Fly/etc).
+  - Set `VITE_API_URL` to that HTTPS endpoint.
+  - Switch Stripe keys to live mode.
+  - Keep all secrets in environment variables on the server side.
 
-# ───────────────────────────────────────────────────────────────────────────────
+In this portfolio version, the emphasis is on **architecture and integration**, not on processing real transactions.
 
-# 7) Short Roadmap
+---
 
-# ───────────────────────────────────────────────────────────────────────────────
+## 8. What This Project Demonstrates
 
-# 1) PDP (detail page) with variations and related products
+This codebase is useful on a resume to demonstrate:
 
-# 2) Shop filters/sort/pagination
-
-# 3) Orders in Account via Stripe webhooks + Firestore
-
-# 4) Address book (Firestore) for faster checkout
-
-# 5) SEO/A11y polish (OG tags per PDP, sitemap/robots)
-
-# 6) Deploy: Front (Vercel/Netlify) + Server (Render/Railway/Fly)
+- Building a **modern ecommerce SPA** with React and Tailwind.
+- Implementing **global state** (cart + drawer) via React Context + localStorage.
+- Creating **auth flows** with Firebase (sign up, login, logout, protected UI).
+- Integrating with **Stripe Checkout** through a Node/Express backend using environment-based configuration.
+- Applying **clean folder structure**, reusable UI components and SEO-minded details.
+- Safe handling of credentials (keys via `.env`, not in source control).
