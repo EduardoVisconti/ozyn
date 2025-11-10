@@ -5,7 +5,7 @@ export default function Hero() {
     <section className="relative h-[80vh] w-full overflow-hidden">
       {/* Background image */}
       <img
-        src="/assets/hero.jpg"
+        src="/assets/hero-new.jpg"
         alt="OZYN performance wear"
         className="absolute inset-0 h-full w-full object-cover"
       />
